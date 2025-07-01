@@ -12,7 +12,7 @@ from telegram import Update
 from app.bot import bot
 from app.services.data_collector_service import DataCollectorService
 from app.models.database import Base, engine, SessionLocal
-from app.services.scheduler_service import scheduler
+from app.services.scheduler_service import SchedulerService
 from app.services.training_service import TrainingService
 from app.services.auto_recommendation_service import AutoRecommendationService
 from app.services.market_monitor_service import MarketMonitorService
@@ -21,14 +21,12 @@ from app.services.market_monitor_service import MarketMonitorService
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Create FastAPI app
 app = FastAPI(
     title="HOT SHARK Bot API",
     description="Telegram Trading Bot with Admin Panel",
     version="1.0.0"
 )
 
-# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -37,28 +35,22 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mount static files for admin panel
 try:
     app.mount("/static", StaticFiles(directory="app/static"), name="static")
 except:
     logger.warning("Static files directory not found")
 
-# Configure Jinja2Templates
 templates = Jinja2Templates(directory="app/templates")
 
-# Include admin routes
 from app.web.admin_routes import admin_router
 app.include_router(admin_router)
 
-# Global market monitor instance
 market_monitor = None
 
 async def collect_market_data_job():
-    """Collect market data periodically"""
     db = SessionLocal()
     try:
         collector = DataCollectorService(db)
-        # Collect data for supported pairs
         pairs = ["XAUUSD", "EURUSD", "GBPUSD", "USDJPY"]
         for pair in pairs:
             try:
@@ -69,7 +61,6 @@ async def collect_market_data_job():
         db.close()
 
 async def train_models_job():
-    """Train ML models periodically"""
     db = SessionLocal()
     try:
         training_service = TrainingService(db)
@@ -83,7 +74,6 @@ async def train_models_job():
         db.close()
 
 async def generate_and_send_recommendations_job():
-    """Generate and send recommendations periodically"""
     db = SessionLocal()
     try:
         auto_rec_service = AutoRecommendationService(db, bot.get_application().bot)
@@ -95,68 +85,60 @@ async def generate_and_send_recommendations_job():
 
 @app.on_event("startup")
 async def startup_event():
-    """Initialize bot on startup"""
     global market_monitor
-    
+
     logger.info("Starting HOT SHARK Bot...")
-    
-    # Create database tables
+
     Base.metadata.create_all(bind=engine)
-    
-    # Setup webhook
+
     await bot.setup_webhook()
-    
-    # Start scheduler
-    bot.start_scheduler()
-    
-    # Schedule periodic jobs
-    scheduler.add_job(
-        collect_market_data_job, 
-        "interval", 
-        minutes=5, 
+
+    scheduler_service = SchedulerService(bot.get_application().bot)
+    scheduler_service.start()
+    app.state.scheduler_service = scheduler_service
+
+    scheduler_service.scheduler.add_job(
+        collect_market_data_job,
+        "interval",
+        minutes=5,
         id="market_data_collection"
     )
-    
-    scheduler.add_job(
-        train_models_job, 
-        "interval", 
-        hours=24, 
+    scheduler_service.scheduler.add_job(
+        train_models_job,
+        "interval",
+        hours=24,
         id="model_training"
     )
-    
-    scheduler.add_job(
-        generate_and_send_recommendations_job, 
-        "interval", 
-        minutes=15, 
+    scheduler_service.scheduler.add_job(
+        generate_and_send_recommendations_job,
+        "interval",
+        minutes=15,
         id="auto_recommendation_generation"
     )
-    
-    # Start 24/7 market monitoring
+
     market_monitor = MarketMonitorService(bot.get_application().bot)
     await market_monitor.start_monitoring()
-    
+
     logger.info("Bot initialized successfully!")
 
 @app.on_event("shutdown")
 async def shutdown_event():
-    """Cleanup on shutdown"""
     global market_monitor
-    
+
     logger.info("Shutting down HOT SHARK Bot...")
-    
-    # Stop market monitoring
+
     if market_monitor:
         await market_monitor.stop_monitoring()
-    
-    # Stop scheduler
+
     bot.stop_scheduler()
-    scheduler.shutdown()
-    
+
+    if hasattr(app.state, "scheduler_service"):
+        app.state.scheduler_service.scheduler.shutdown()
+
     logger.info("Bot shutdown complete!")
 
 @app.get("/")
 async def root():
-    """Root endpoint"""
     return {
         "message": "HOT SHARK Bot API is running! 🐋",
         "status": "active",
@@ -173,31 +155,25 @@ async def root():
 
 @app.post("/webhook/{token}")
 async def webhook(token: str, request: Request):
-    """Telegram webhook endpoint"""
     try:
-        # Verify token
         from app.config import Config
         if token != Config.TELEGRAM_BOT_TOKEN:
             raise HTTPException(status_code=401, detail="Invalid token")
-        
-        # Get update data
+
         update_data = await request.json()
-        
-        # Process update
         update = Update.de_json(update_data, bot.get_application().bot)
         await bot.get_application().process_update(update)
-        
+
         return {"status": "ok"}
-    
+
     except Exception as e:
         logger.error(f"Webhook error: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 @app.get("/health")
 async def health_check():
-    """Health check endpoint"""
     from app.services.session_manager_service import SessionManagerService
-    
+
     return {
         "status": "healthy",
         "bot_status": "running",
@@ -208,15 +184,14 @@ async def health_check():
 
 @app.get("/status")
 async def bot_status():
-    """Bot status endpoint"""
     from app.services.session_manager_service import SessionManagerService
-    
+
     return {
         "bot_name": "HOT SHARK Bot",
         "version": "1.0.0",
         "active_users": SessionManagerService.get_active_sessions_count(),
         "supported_pairs": [
-            "XAUUSD", "BTCUSD", "ETHUSD", "EURUSD", 
+            "XAUUSD", "BTCUSD", "ETHUSD", "EURUSD",
             "GBPJPY", "GBPUSD", "USDJPY", "US30", "US100"
         ],
         "features": {
@@ -231,13 +206,5 @@ async def bot_status():
 
 if __name__ == "__main__":
     import uvicorn
-    
-    # Get port from environment variable (Render sets this)
     port = int(os.environ.get("PORT", 8000))
-    
-    uvicorn.run(
-        app, 
-        host="0.0.0.0", 
-        port=port,
-        log_level="info"
-    )
+    uvicorn.run(app, host="0.0.0.0", port=port, log_level="info")
