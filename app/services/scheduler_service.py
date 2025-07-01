@@ -201,4 +201,3 @@ class SchedulerService:
         for job in jobs:
             print(f"Job ID: {job.id}, Next run: {job.next_run_time}")
         return jobs
-
