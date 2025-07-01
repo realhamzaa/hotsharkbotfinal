@@ -12,7 +12,7 @@ from telegram import Update
 from app.bot import bot
 from app.services.data_collector_service import DataCollectorService
 from app.models.database import Base, engine, SessionLocal
-from app.services.scheduler_service import scheduler
+from app.services.scheduler_service import SchedulerService
 from app.services.training_service import TrainingService
 from app.services.auto_recommendation_service import AutoRecommendationService
 from app.services.market_monitor_service import MarketMonitorService
@@ -50,8 +50,9 @@ templates = Jinja2Templates(directory="app/templates")
 from app.web.admin_routes import router as admin_router
 app.include_router(admin_router)
 
-# Global market monitor instance
+# Global instances
 market_monitor = None
+scheduler_service = None
 
 async def collect_market_data_job():
     """Collect market data periodically"""
@@ -95,7 +96,7 @@ async def generate_and_send_recommendations_job():
 @app.on_event("startup")
 async def startup_event():
     """Initialize bot on startup"""
-    global market_monitor
+    global market_monitor, scheduler_service
     
     logger.info("Starting HOT SHARK Bot...")
     
@@ -105,10 +106,12 @@ async def startup_event():
     # Setup webhook
     await bot.setup_webhook()
     
-    # Start scheduler
-    bot.start_scheduler()
+    # Create and start scheduler service
+    scheduler_service = SchedulerService(bot.get_application().bot)
+    scheduler_service.start()
     
-    # Schedule periodic jobs
+    # Add periodic jobs
+    scheduler = scheduler_service.scheduler
     scheduler.add_job(
         collect_market_data_job, 
         "interval", 
@@ -130,7 +133,7 @@ async def startup_event():
         id="auto_recommendation_generation"
     )
     
-    # Start 24/7 market monitoring
+    # Start market monitoring
     market_monitor = MarketMonitorService(bot.get_application().bot)
     await market_monitor.start_monitoring()
     
@@ -139,17 +142,17 @@ async def startup_event():
 @app.on_event("shutdown")
 async def shutdown_event():
     """Cleanup on shutdown"""
-    global market_monitor
+    global market_monitor, scheduler_service
     
     logger.info("Shutting down HOT SHARK Bot...")
     
-    # Stop market monitoring
     if market_monitor:
         await market_monitor.stop_monitoring()
     
-    # Stop scheduler
     bot.stop_scheduler()
-    scheduler.shutdown()
+    
+    if scheduler_service:
+        scheduler_service.stop()
     
     logger.info("Bot shutdown complete!")
 
@@ -232,4 +235,4 @@ if __name__ == "__main__":
         host="0.0.0.0", 
         port=port,
         log_level="info"
-                                                      )
+        )
