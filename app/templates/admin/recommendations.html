@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block title %}إدارة التوصيات - HOT SHARK Admin{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="text-white mb-4">
+            <i class="fas fa-chart-line"></i>
+            إدارة التوصيات
+        </h1>
+    </div>
+</div>
+
+<!-- Send New Recommendation Form -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-plus"></i>
+                    إرسال توصية جديدة
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="/admin/recommendations/send">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="asset_pair" class="form-label">زوج العملة:</label>
+                                <select class="form-control" name="asset_pair" required>
+                                    {% for pair in supported_pairs %}
+                                    <option value="{{ pair }}">{{ pair }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="trade_type" class="form-label">نوع الصفقة:</label>
+                                <select class="form-control" name="trade_type" required>
+                                    <option value="BUY">شراء (BUY)</option>
+                                    <option value="SELL">بيع (SELL)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="entry_points" class="form-label">نقاط الدخول (مفصولة بفاصلة):</label>
+                                <input type="text" class="form-control" name="entry_points" 
+                                       placeholder="1950.5, 1948.0" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="tp_levels" class="form-label">أهداف الربح (مفصولة بفاصلة):</label>
+                                <input type="text" class="form-control" name="tp_levels" 
+                                       placeholder="1960.0, 1965.0" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="sl" class="form-label">وقف الخسارة:</label>
+                                <input type="number" step="0.01" class="form-control" name="sl" 
+                                       placeholder="1945.0" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="pips" class="form-label">عدد النقاط:</label>
+                                <input type="number" class="form-control" name="pips" 
+                                       placeholder="150" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="success_rate" class="form-label">نسبة النجاح (%):</label>
+                                <input type="number" step="0.1" class="form-control" name="success_rate" 
+                                       placeholder="85.5">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="trade_duration" class="form-label">مدة الصفقة:</label>
+                                <select class="form-control" name="trade_duration" required>
+                                    <option value="scalp">سكالب (Scalp)</option>
+                                    <option value="short" selected>قصيرة (Short)</option>
+                                    <option value="long">طويلة (Long)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="rr_ratio" class="form-label">نسبة R:R:</label>
+                                <input type="text" class="form-control" name="rr_ratio" 
+                                       placeholder="1:2" value="1:2" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="lot_size_per_100" class="form-label">اللوت لكل 100$:</label>
+                                <input type="number" step="0.01" class="form-control" name="lot_size_per_100" 
+                                       placeholder="0.01" value="0.01" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="strategy" class="form-label">الاستراتيجية (اختياري):</label>
+                                <input type="text" class="form-control" name="strategy" 
+                                       placeholder="ICT_BOS, FVG, Liquidity_Sweep">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <div class="form-check mt-4">
+                                    <input class="form-check-input" type="checkbox" name="is_premium" id="is_premium">
+                                    <label class="form-check-label" for="is_premium">
+                                        💎 صفقة مميزة (Zero Drawdown)
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="is_live" id="is_live" checked>
+                                    <label class="form-check-label" for="is_live">
+                                        🔴 صفقة مباشرة (غير معلقة)
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-paper-plane"></i>
+                            إرسال التوصية لجميع المشتركين
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Recommendations -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-history"></i>
+                    التوصيات الأخيرة
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if recommendations %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>المعرف</th>
+                                <th>الزوج</th>
+                                <th>النوع</th>
+                                <th>نقاط الدخول</th>
+                                <th>TP</th>
+                                <th>SL</th>
+                                <th>النقاط</th>
+                                <th>الحالة</th>
+                                <th>التاريخ</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for rec in recommendations %}
+                            <tr>
+                                <td>
+                                    <strong>#{{ rec.id }}</strong>
+                                    {% if rec.is_premium %}
+                                    <span class="badge bg-warning">💎</span>
+                                    {% endif %}
+                                </td>
+                                <td><strong>{{ rec.asset_pair }}</strong></td>
+                                <td>
+                                    <span class="badge {% if rec.trade_type == 'BUY' %}bg-success{% else %}bg-danger{% endif %}">
+                                        {{ rec.trade_type }}
+                                    </span>
+                                </td>
+                                <td>{{ rec.entry_points|replace('[', '')|replace(']', '')|replace('"', '') }}</td>
+                                <td>{{ rec.tp|replace('[', '')|replace(']', '')|replace('"', '') }}</td>
+                                <td>{{ rec.sl }}</td>
+                                <td>{{ rec.pips }}</td>
+                                <td>
+                                    <span class="badge 
+                                        {% if rec.status == 'active' %}bg-primary
+                                        {% elif rec.status == 'tp_hit' %}bg-success
+                                        {% elif rec.status == 'sl_hit' %}bg-danger
+                                        {% else %}bg-secondary{% endif %}">
+                                        {% if rec.status == 'active' %}نشط
+                                        {% elif rec.status == 'tp_hit' %}تم الهدف
+                                        {% elif rec.status == 'sl_hit' %}ضرب SL
+                                        {% else %}{{ rec.status }}{% endif %}
+                                    </span>
+                                </td>
+                                <td>{{ rec.sent_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>
+                                    {% if rec.status == 'active' %}
+                                    <div class="btn-group" role="group">
+                                        <button type="button" class="btn btn-success btn-sm" 
+                                                onclick="updateRecommendationStatus({{ rec.id }}, 'tp_hit')">
+                                            <i class="fas fa-check"></i> TP
+                                        </button>
+                                        <button type="button" class="btn btn-danger btn-sm" 
+                                                onclick="updateRecommendationStatus({{ rec.id }}, 'sl_hit')">
+                                            <i class="fas fa-times"></i> SL
+                                        </button>
+                                    </div>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">لا توجد توصيات حتى الآن</h5>
+                    <p class="text-muted">قم بإرسال أول توصية باستخدام النموذج أعلاه</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function updateRecommendationStatus(recId, status) {
+    if (confirm('هل أنت متأكد من تحديث حالة هذه التوصية؟')) {
+        // In a real implementation, this would make an AJAX call to update the status
+        // For now, we'll just show an alert
+        alert('سيتم تحديث حالة التوصية #' + recId + ' إلى ' + status);
+        
+        // You can implement the actual update logic here
+        // fetch('/admin/recommendations/' + recId + '/update', {
+        //     method: 'POST',
+        //     headers: {'Content-Type': 'application/json'},
+        //     body: JSON.stringify({status: status})
+        // }).then(() => location.reload());
+    }
+}
+
+// Auto-refresh every 30 seconds
+setTimeout(function() {
+    location.reload();
+}, 30000);
+</script>
+{% endblock %}
+

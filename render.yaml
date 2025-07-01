@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: hot-shark-bot
+    env: docker  # Changed to docker
+    plan: free
+    dockerfilePath: ./Dockerfile  # Specify Dockerfile path
+    envVars:
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_WEBHOOK_URL
+        sync: false
+      - key: DATABASE_URL
+        value: sqlite:///./hot_shark_bot.db
+      - key: ADMIN_USER_ID
+        sync: false
+      - key: SECRET_KEY
+        value: your_secret_key_here
+      - key: ENVIRONMENT
+        value: production
+      - key: PORT
+        value: 10000
+    autoDeploy: false
+

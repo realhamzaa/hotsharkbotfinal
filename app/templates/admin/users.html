@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}إدارة المستخدمين - HOT SHARK Admin{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="text-white mb-4">
+            <i class="fas fa-users"></i>
+            إدارة المستخدمين
+        </h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-list"></i>
+                    قائمة المستخدمين
+                </h5>
+                <div>
+                    <span class="badge bg-primary">إجمالي: {{ users|length }}</span>
+                    <span class="badge bg-success">مشتركين: {{ users|selectattr('is_subscribed')|list|length }}</span>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if users %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>معرف المستخدم</th>
+                                <th>اسم المستخدم</th>
+                                <th>اللغة</th>
+                                <th>حالة الاشتراك</th>
+                                <th>تاريخ الانتهاء</th>
+                                <th>تاريخ الانضمام</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                            <tr>
+                                <td>
+                                    <strong>{{ user.id }}</strong>
+                                    {% if user.is_admin %}
+                                    <span class="badge bg-danger ms-2">مسؤول</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {{ user.username or 'غير محدد' }}
+                                </td>
+                                <td>
+                                    <span class="badge {% if user.lang_code == 'ar' %}bg-success{% else %}bg-info{% endif %}">
+                                        {% if user.lang_code == 'ar' %}🇸🇦 عربي{% else %}🇺🇸 English{% endif %}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge {% if user.is_subscribed %}bg-success{% else %}bg-secondary{% endif %}">
+                                        {% if user.is_subscribed %}✅ مشترك{% else %}❌ غير مشترك{% endif %}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if user.subscription_expiry %}
+                                        {{ user.subscription_expiry.strftime('%Y-%m-%d %H:%M') }}
+                                        {% if user.subscription_expiry < moment.now() %}
+                                        <span class="badge bg-danger">منتهي</span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="text-muted">غير محدد</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ user.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        {% if not user.is_subscribed %}
+                                        <button type="button" class="btn btn-success btn-sm" 
+                                                onclick="showAddSubscriptionModal({{ user.id }}, '{{ user.username or user.id }}')">
+                                            <i class="fas fa-plus"></i> إضافة اشتراك
+                                        </button>
+                                        {% else %}
+                                        <form method="post" action="/admin/users/{{ user.id }}/remove_subscription" 
+                                              style="display: inline;" 
+                                              onsubmit="return confirm('هل أنت متأكد من إلغاء اشتراك هذا المستخدم؟')">
+                                            <button type="submit" class="btn btn-danger btn-sm">
+                                                <i class="fas fa-times"></i> إلغاء الاشتراك
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">لا يوجد مستخدمين حتى الآن</h5>
+                    <p class="text-muted">سيظهر المستخدمون هنا عند بدء استخدام البوت</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Subscription Modal -->
+<div class="modal fade" id="addSubscriptionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus"></i>
+                    إضافة اشتراك
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="addSubscriptionForm" method="post">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">المستخدم:</label>
+                        <input type="text" class="form-control" id="userDisplay" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="days" class="form-label">مدة الاشتراك (بالأيام):</label>
+                        <select class="form-control" name="days" required>
+                            <option value="7">أسبوع واحد (7 أيام)</option>
+                            <option value="30" selected>شهر واحد (30 يوم)</option>
+                            <option value="90">3 أشهر (90 يوم)</option>
+                            <option value="180">6 أشهر (180 يوم)</option>
+                            <option value="365">سنة واحدة (365 يوم)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-check"></i> إضافة الاشتراك
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function showAddSubscriptionModal(userId, username) {
+    document.getElementById('userDisplay').value = username + ' (' + userId + ')';
+    document.getElementById('addSubscriptionForm').action = '/admin/users/' + userId + '/subscription';
+    
+    var modal = new bootstrap.Modal(document.getElementById('addSubscriptionModal'));
+    modal.show();
+}
+
+// Auto-refresh every 60 seconds
+setTimeout(function() {
+    location.reload();
+}, 60000);
+</script>
+{% endblock %}
+

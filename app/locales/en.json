@@ -1,0 +1,72 @@
+{
+  "welcome": "Welcome to HOT SHARK Bot 🐋\n\nProfessional bot for Forex, Gold, and Crypto recommendations",
+  "login_success": "Login successful! ✅",
+  "login_failed": "Login failed. Please try again.",
+  "logout_success": "Logout successful! 👋",
+  "logout_failed": "Logout failed.",
+  "session_already_active": "⚠️ You already have an active session!\n\nOnly one session per user is allowed.\nDo you want to terminate the previous session and login again?",
+  "force_login": "🔄 Terminate previous session and login",
+  "force_login_success": "Previous session terminated and login successful! ✅",
+  "subscription_expired": "Your subscription has expired. Please contact admin.",
+  "subscription_active": "Your subscription is active until: {expiry_date}",
+  "language_changed": "Language changed to English 🇺🇸",
+  "admin_panel": "Admin Panel 👨‍💼",
+  "not_authorized": "Not authorized to access this feature.",
+  "trade_entered": "Trade entry recorded ✅",
+  "trade_updated": "Trade status updated 🔄",
+  
+  "keyboard": {
+    "login": "Login 🔐",
+    "logout": "Logout 🚪",
+    "language": "🇸🇦 العربية",
+    "reports": "Reports 📊",
+    "settings": "Settings ⚙️",
+    "admin": "Admin 👨‍💼",
+    "enter_trade": "✅ Entered Trade",
+    "update_trade": "🔄 Update Status",
+    "daily_report": "Daily Report",
+    "weekly_report": "Weekly Report",
+    "monthly_report": "Monthly Report",
+    "catalog": "📚 Catalog"
+  },
+  
+  "reports": {
+    "daily": "📊 Daily Report\n\nPeriod: {start_date} - {end_date}\nTotal Trades: {total_trades}\nProfit/Loss: {profit_loss} pips\nPerformance: {performance}%",
+    "weekly": "📊 Weekly Report\n\nPeriod: {start_date} - {end_date}\nTotal Trades: {total_trades}\nProfit/Loss: {profit_loss} pips\nPerformance: {performance}%",
+    "monthly": "📊 Monthly Report\n\nPeriod: {start_date} - {end_date}\nTotal Trades: {total_trades}\nProfit/Loss: {profit_loss} pips\nPerformance: {performance}%"
+  },
+  
+  "news": {
+    "market_open": "🔔 Market Opening\n\n{market_name} is now open\nHigh liquidity time",
+    "news_alert": "📰 News Alert\n\n{title}\nTime: {time}\nImpact: {impact}\n\n{description}",
+    "news_reminder": "⏰ Reminder: Important news in 1 hour\n\n{title}\nTime: {time}"
+  },
+  
+  "catalog": {
+    "menu": "Catalog",
+    "menu_description": "Choose the information you want to view:",
+    "market_schedule": "📅 Market Schedule",
+    "liquidity_schedule": "💧 Liquidity Schedule",
+    "news_calendar": "📰 News Calendar",
+    "trading_pairs": "📈 Trading Pairs",
+    "current_time": "Current Time",
+    "next_market_opening": "Next Market Opening",
+    "high_liquidity_periods": "High Liquidity Periods",
+    "current_liquidity": "Current Liquidity",
+    "no_news_today": "No important news today",
+    "supported_pairs": "Supported Trading Pairs"
+  },
+  
+  "monitoring": {
+    "market_opening_alert": "Market Opening Alert",
+    "market_opened": "opened now",
+    "trading_opportunity": "Potential trading opportunity",
+    "high_liquidity_alert": "High Liquidity Alert",
+    "high_liquidity_started": "High liquidity period started",
+    "high_volatility_expected": "Expect high volatility",
+    "watch_for_opportunities": "Watch for trading opportunities"
+  },
+  
+  "back": "Back"
+}
+

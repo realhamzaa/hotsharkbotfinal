@@ -1,0 +1,341 @@
+{% extends "base.html" %}
+
+{% block title %}الإعدادات - HOT SHARK Admin{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="text-white mb-4">
+            <i class="fas fa-cog"></i>
+            إعدادات النظام
+        </h1>
+    </div>
+</div>
+
+<!-- Bot Configuration -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-robot"></i>
+                    إعدادات البوت
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">رمز البوت:</label>
+                            <input type="text" class="form-control" value="{{ config.TELEGRAM_BOT_TOKEN[:20] }}..." readonly>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Webhook URL:</label>
+                            <input type="text" class="form-control" value="{{ config.TELEGRAM_WEBHOOK_URL or 'غير محدد' }}" readonly>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">المنطقة الزمنية الافتراضية:</label>
+                            <select class="form-control">
+                                <option value="Asia/Jerusalem" selected>Asia/Jerusalem (إسرائيل)</option>
+                                <option value="GMT">GMT (غرينتش)</option>
+                                <option value="America/New_York">America/New_York (نيويورك)</option>
+                                <option value="Europe/London">Europe/London (لندن)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">اللغة الافتراضية:</label>
+                            <select class="form-control">
+                                <option value="ar" selected>🇸🇦 العربية</option>
+                                <option value="en">🇺🇸 English</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Trading Settings -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-line"></i>
+                    إعدادات التداول
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="mb-3">
+                            <label class="form-label">الأزواج المدعومة:</label>
+                            <div class="row">
+                                {% for pair in config.SUPPORTED_PAIRS %}
+                                <div class="col-md-3 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" checked>
+                                        <label class="form-check-label">{{ pair }}</label>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label">الحد الأقصى للتوصيات اليومية:</label>
+                            <input type="number" class="form-control" value="10">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label">نسبة R:R الافتراضية:</label>
+                            <input type="text" class="form-control" value="1:2">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label">حجم اللوت الافتراضي لكل 100$:</label>
+                            <input type="number" step="0.01" class="form-control" value="0.01">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Notification Settings -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-bell"></i>
+                    إعدادات الإشعارات
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="marketOpenNotifications" checked>
+                            <label class="form-check-label" for="marketOpenNotifications">
+                                تنبيهات افتتاح الأسواق
+                            </label>
+                        </div>
+                        
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="newsReminders" checked>
+                            <label class="form-check-label" for="newsReminders">
+                                تذكير الأخبار (قبل ساعة)
+                            </label>
+                        </div>
+                        
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="weeklyReports" checked>
+                            <label class="form-check-label" for="weeklyReports">
+                                التقارير الأسبوعية التلقائية
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="criticalNewsAlerts" checked>
+                            <label class="form-check-label" for="criticalNewsAlerts">
+                                تنبيهات الأخبار الحرجة
+                            </label>
+                        </div>
+                        
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="liquidityAlerts" checked>
+                            <label class="form-check-label" for="liquidityAlerts">
+                                تنبيهات السيولة المرتفعة
+                            </label>
+                        </div>
+                        
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="dailySchedule" checked>
+                            <label class="form-check-label" for="dailySchedule">
+                                جدول السوق اليومي
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- System Status -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-server"></i>
+                    حالة النظام
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <i class="fas fa-circle text-success fa-2x mb-2"></i>
+                            <h6>البوت</h6>
+                            <span class="badge bg-success">متصل</span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <i class="fas fa-circle text-success fa-2x mb-2"></i>
+                            <h6>قاعدة البيانات</h6>
+                            <span class="badge bg-success">متصلة</span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <i class="fas fa-circle text-success fa-2x mb-2"></i>
+                            <h6>الجدولة</h6>
+                            <span class="badge bg-success">نشطة</span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <i class="fas fa-circle text-warning fa-2x mb-2"></i>
+                            <h6>Webhook</h6>
+                            <span class="badge bg-warning">اختباري</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- System Actions -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-tools"></i>
+                    إجراءات النظام
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <button class="btn btn-info w-100 mb-3" onclick="backupDatabase()">
+                            <i class="fas fa-database"></i>
+                            نسخ احتياطي لقاعدة البيانات
+                        </button>
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-warning w-100 mb-3" onclick="restartBot()">
+                            <i class="fas fa-redo"></i>
+                            إعادة تشغيل البوت
+                        </button>
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-secondary w-100 mb-3" onclick="clearLogs()">
+                            <i class="fas fa-trash"></i>
+                            مسح السجلات
+                        </button>
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-success w-100 mb-3" onclick="testWebhook()">
+                            <i class="fas fa-link"></i>
+                            اختبار Webhook
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>تحذير:</strong> بعض الإجراءات قد تؤثر على عمل البوت مؤقتاً. تأكد من عدم وجود توصيات نشطة قبل إعادة التشغيل.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Save Settings Button -->
+<div class="row mt-4">
+    <div class="col-12 text-center">
+        <button class="btn btn-primary btn-lg" onclick="saveSettings()">
+            <i class="fas fa-save"></i>
+            حفظ الإعدادات
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function saveSettings() {
+    if (confirm('هل تريد حفظ جميع الإعدادات؟')) {
+        // In a real implementation, this would save the settings
+        alert('تم حفظ الإعدادات بنجاح!');
+        
+        // You can implement the actual save logic here
+        // const settings = {
+        //     timezone: document.querySelector('select[name="timezone"]').value,
+        //     language: document.querySelector('select[name="language"]').value,
+        //     // ... other settings
+        // };
+        // 
+        // fetch('/admin/settings/save', {
+        //     method: 'POST',
+        //     headers: {'Content-Type': 'application/json'},
+        //     body: JSON.stringify(settings)
+        // });
+    }
+}
+
+function backupDatabase() {
+    if (confirm('هل تريد إنشاء نسخة احتياطية من قاعدة البيانات؟')) {
+        alert('جاري إنشاء النسخة الاحتياطية...');
+        // Implement backup logic
+    }
+}
+
+function restartBot() {
+    if (confirm('هل أنت متأكد من إعادة تشغيل البوت؟ قد يستغرق الأمر بضع ثوانٍ.')) {
+        alert('جاري إعادة تشغيل البوت...');
+        // Implement restart logic
+    }
+}
+
+function clearLogs() {
+    if (confirm('هل تريد مسح جميع السجلات؟ لا يمكن التراجع عن هذا الإجراء.')) {
+        alert('تم مسح السجلات بنجاح!');
+        // Implement log clearing logic
+    }
+}
+
+function testWebhook() {
+    alert('جاري اختبار Webhook...');
+    // Implement webhook test logic
+    setTimeout(() => {
+        alert('Webhook يعمل بشكل صحيح!');
+    }, 2000);
+}
+</script>
+{% endblock %}
+

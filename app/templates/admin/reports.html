@@ -1,0 +1,294 @@
+{% extends "base.html" %}
+
+{% block title %}التقارير - HOT SHARK Admin{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="text-white mb-4">
+            <i class="fas fa-file-alt"></i>
+            التقارير والإحصائيات
+        </h1>
+    </div>
+</div>
+
+<!-- Reports Overview -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar"></i>
+                    نظرة عامة على التقارير
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <i class="fas fa-file-alt fa-3x text-primary mb-2"></i>
+                            <h4>{{ reports|length }}</h4>
+                            <p class="text-muted">إجمالي التقارير</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <i class="fas fa-calendar-day fa-3x text-success mb-2"></i>
+                            <h4>{{ reports|selectattr('report_type', 'equalto', 'daily')|list|length }}</h4>
+                            <p class="text-muted">التقارير اليومية</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <i class="fas fa-calendar-week fa-3x text-warning mb-2"></i>
+                            <h4>{{ reports|selectattr('report_type', 'equalto', 'weekly')|list|length }}</h4>
+                            <p class="text-muted">التقارير الأسبوعية</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <i class="fas fa-calendar-alt fa-3x text-info mb-2"></i>
+                            <h4>{{ reports|selectattr('report_type', 'equalto', 'monthly')|list|length }}</h4>
+                            <p class="text-muted">التقارير الشهرية</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Generate Reports -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-plus"></i>
+                    إنشاء تقرير جديد
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <button class="btn btn-success w-100 mb-3" onclick="generateReport('daily')">
+                            <i class="fas fa-calendar-day"></i>
+                            تقرير يومي
+                        </button>
+                    </div>
+                    <div class="col-md-4">
+                        <button class="btn btn-warning w-100 mb-3" onclick="generateReport('weekly')">
+                            <i class="fas fa-calendar-week"></i>
+                            تقرير أسبوعي
+                        </button>
+                    </div>
+                    <div class="col-md-4">
+                        <button class="btn btn-info w-100 mb-3" onclick="generateReport('monthly')">
+                            <i class="fas fa-calendar-alt"></i>
+                            تقرير شهري
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>ملاحظة:</strong> يتم إنشاء التقارير الأسبوعية تلقائياً كل يوم سبت في الساعة 12:00 ظهراً بتوقيت غرينتش.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Reports -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-history"></i>
+                    التقارير الأخيرة
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if reports %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>المعرف</th>
+                                <th>نوع التقرير</th>
+                                <th>المستخدم</th>
+                                <th>الفترة</th>
+                                <th>تاريخ الإنشاء</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for report in reports %}
+                            <tr>
+                                <td><strong>#{{ report.id }}</strong></td>
+                                <td>
+                                    <span class="badge 
+                                        {% if report.report_type == 'daily' %}bg-success
+                                        {% elif report.report_type == 'weekly' %}bg-warning
+                                        {% else %}bg-info{% endif %}">
+                                        {% if report.report_type == 'daily' %}📅 يومي
+                                        {% elif report.report_type == 'weekly' %}📊 أسبوعي
+                                        {% else %}📈 شهري{% endif %}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if report.user_id %}
+                                    <span class="badge bg-primary">{{ report.user_id }}</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">عام</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {{ report.start_date.strftime('%Y-%m-%d') }} - 
+                                    {{ report.end_date.strftime('%Y-%m-%d') }}
+                                </td>
+                                <td>{{ report.generated_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>
+                                    <button class="btn btn-primary btn-sm" onclick="viewReport({{ report.id }})">
+                                        <i class="fas fa-eye"></i> عرض
+                                    </button>
+                                    <button class="btn btn-secondary btn-sm" onclick="downloadReport({{ report.id }})">
+                                        <i class="fas fa-download"></i> تحميل
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">لا توجد تقارير حتى الآن</h5>
+                    <p class="text-muted">قم بإنشاء أول تقرير باستخدام الأزرار أعلاه</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Performance Metrics -->
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-pie"></i>
+                    إحصائيات الأداء
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="performanceChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-line"></i>
+                    نمو المستخدمين
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="growthChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+function generateReport(type) {
+    if (confirm('هل تريد إنشاء تقرير ' + type + ' جديد؟')) {
+        // In a real implementation, this would make an API call
+        alert('سيتم إنشاء التقرير ' + type + ' قريباً...');
+        
+        // You can implement the actual report generation logic here
+        // fetch('/admin/reports/generate', {
+        //     method: 'POST',
+        //     headers: {'Content-Type': 'application/json'},
+        //     body: JSON.stringify({type: type})
+        // }).then(() => location.reload());
+    }
+}
+
+function viewReport(reportId) {
+    // In a real implementation, this would open the report in a modal or new page
+    alert('عرض التقرير #' + reportId);
+}
+
+function downloadReport(reportId) {
+    // In a real implementation, this would download the report as PDF
+    alert('تحميل التقرير #' + reportId);
+}
+
+// Performance Chart
+const performanceCtx = document.getElementById('performanceChart').getContext('2d');
+new Chart(performanceCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['توصيات ناجحة', 'توصيات خاسرة', 'توصيات نشطة'],
+        datasets: [{
+            data: [65, 25, 10],
+            backgroundColor: ['#28a745', '#dc3545', '#007bff'],
+            borderWidth: 0
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+// Growth Chart
+const growthCtx = document.getElementById('growthChart').getContext('2d');
+new Chart(growthCtx, {
+    type: 'line',
+    data: {
+        labels: ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو'],
+        datasets: [{
+            label: 'المستخدمين الجدد',
+            data: [12, 19, 25, 32, 45, 58],
+            borderColor: '#007bff',
+            backgroundColor: 'rgba(0, 123, 255, 0.1)',
+            tension: 0.4,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        },
+        plugins: {
+            legend: {
+                display: false
+            }
+        }
+    }
+});
+
+// Auto-refresh every 2 minutes
+setTimeout(function() {
+    location.reload();
+}, 120000);
+</script>
+{% endblock %}
+

@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+
+{% block title %}إدارة الأخبار - HOT SHARK Admin{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="text-white mb-4">
+            <i class="fas fa-newspaper"></i>
+            إدارة الأخبار
+        </h1>
+    </div>
+</div>
+
+<!-- Send News Form -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-plus"></i>
+                    إرسال خبر جديد
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="/admin/news/send">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label for="title" class="form-label">عنوان الخبر:</label>
+                                <input type="text" class="form-control" name="title" 
+                                       placeholder="بيانات التضخم الأمريكي" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="time" class="form-label">وقت الخبر:</label>
+                                <input type="datetime-local" class="form-control" name="time" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="currency" class="form-label">العملة المتأثرة:</label>
+                                <select class="form-control" name="currency">
+                                    <option value="">غير محدد</option>
+                                    <option value="USD">USD - الدولار الأمريكي</option>
+                                    <option value="EUR">EUR - اليورو</option>
+                                    <option value="GBP">GBP - الجنيه الإسترليني</option>
+                                    <option value="JPY">JPY - الين الياباني</option>
+                                    <option value="AUD">AUD - الدولار الأسترالي</option>
+                                    <option value="CAD">CAD - الدولار الكندي</option>
+                                    <option value="CHF">CHF - الفرنك السويسري</option>
+                                    <option value="NZD">NZD - الدولار النيوزيلندي</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="impact" class="form-label">مستوى التأثير:</label>
+                                <select class="form-control" name="impact" required>
+                                    <option value="low">🟢 منخفض</option>
+                                    <option value="medium" selected>🟡 متوسط</option>
+                                    <option value="high">🔴 مرتفع</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <div class="form-check mt-4">
+                                    <input class="form-check-input" type="checkbox" name="is_critical" id="is_critical">
+                                    <label class="form-check-label" for="is_critical">
+                                        🚨 خبر حرج (عالي الأهمية)
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">وصف الخبر (اختياري):</label>
+                        <textarea class="form-control" name="description" rows="3" 
+                                  placeholder="تفاصيل إضافية حول الخبر وتأثيره المتوقع على السوق..."></textarea>
+                    </div>
+                    
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-warning btn-lg">
+                            <i class="fas fa-broadcast-tower"></i>
+                            إرسال الخبر لجميع المشتركين
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent News -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-history"></i>
+                    الأخبار الأخيرة
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if news_items %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>المعرف</th>
+                                <th>العنوان</th>
+                                <th>الوقت</th>
+                                <th>العملة</th>
+                                <th>التأثير</th>
+                                <th>الحالة</th>
+                                <th>تاريخ الإرسال</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for news in news_items %}
+                            <tr>
+                                <td>
+                                    <strong>#{{ news.id }}</strong>
+                                    {% if news.is_critical %}
+                                    <span class="badge bg-danger">🚨</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <strong>{{ news.title }}</strong>
+                                    {% if news.description %}
+                                    <br><small class="text-muted">{{ news.description[:100] }}{% if news.description|length > 100 %}...{% endif %}</small>
+                                    {% endif %}
+                                </td>
+                                <td>{{ news.time.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>
+                                    {% if news.currency %}
+                                    <span class="badge bg-info">{{ news.currency }}</span>
+                                    {% else %}
+                                    <span class="text-muted">غير محدد</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge 
+                                        {% if news.impact == 'low' %}bg-success
+                                        {% elif news.impact == 'medium' %}bg-warning
+                                        {% else %}bg-danger{% endif %}">
+                                        {% if news.impact == 'low' %}🟢 منخفض
+                                        {% elif news.impact == 'medium' %}🟡 متوسط
+                                        {% else %}🔴 مرتفع{% endif %}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if news.sent_at %}
+                                    <span class="badge bg-success">تم الإرسال</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">لم يتم الإرسال</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if news.sent_at %}
+                                    {{ news.sent_at.strftime('%Y-%m-%d %H:%M') }}
+                                    {% else %}
+                                    <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-newspaper fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">لا توجد أخبار حتى الآن</h5>
+                    <p class="text-muted">قم بإرسال أول خبر باستخدام النموذج أعلاه</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- News Calendar -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-calendar-alt"></i>
+                    التقويم الاقتصادي
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>نصيحة:</strong> يمكنك جدولة الأخبار مسبقاً وسيتم إرسال تذكير تلقائي قبل ساعة من موعد صدور الخبر.
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card border-success">
+                            <div class="card-body text-center">
+                                <i class="fas fa-clock fa-2x text-success mb-2"></i>
+                                <h6>التذكيرات التلقائية</h6>
+                                <p class="text-muted small">إرسال تذكير قبل ساعة من الخبر</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-warning">
+                            <div class="card-body text-center">
+                                <i class="fas fa-bell fa-2x text-warning mb-2"></i>
+                                <h6>تنبيهات فورية</h6>
+                                <p class="text-muted small">إرسال فوري للأخبار الحرجة</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-info">
+                            <div class="card-body text-center">
+                                <i class="fas fa-chart-line fa-2x text-info mb-2"></i>
+                                <h6>تحليل التأثير</h6>
+                                <p class="text-muted small">تقييم تأثير الأخبار على السوق</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Set current datetime as default
+document.addEventListener('DOMContentLoaded', function() {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    document.querySelector('input[name="time"]').value = now.toISOString().slice(0, 16);
+});
+
+// Auto-refresh every 60 seconds
+setTimeout(function() {
+    location.reload();
+}, 60000);
+</script>
+{% endblock %}
+
